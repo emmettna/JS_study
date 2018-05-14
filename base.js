@@ -5,10 +5,6 @@ By Emmett Na 2017/05/10
 */
 /* TODO
 
-2)  stars go inside to cave once it's collected
-3)  Game Over Screen #Done
-4)  Defeated Screen #Done
-5)  Change stars to Knifves #Done
 */
 var life = 5;
 var bunnyImg = new Image();
@@ -77,12 +73,13 @@ function setMousePosition(event){
 function setCanvas(){
   $('#bg').css('position', 'absolute').css('left', initPosition.left)
   .css('top',initPosition.top).css('height',canvasSize.height)
-  .css('width',canvasSize.width).css('borderStyle','solid');
+  .css('width',canvasSize.width).css('borderStyle','solid').css('border-color','black').css('color','red');
 }
 
 function setSideBar(){
-  $('#sideBar').css('position','absolute').css('width',canvasSize.width / 9)
-  .css('height', canvasSize.height).css('backgroundColor','coral');
+  $('#sideBar').css('position','absolute').css('width',canvasSize.width / 8)
+  .css('height', canvasSize.height).css('background-image','url("log.png")')
+  ;
 
   // Add child nodes
   setLife();
@@ -92,25 +89,24 @@ function setSideBar(){
 }
 
 function setLife(){
-
-  $('#lifeLeft').css('position','absolute').css('top',5)
+  $('#lifeLeft').css('position','absolute').css('top',65)
   .css('height',20).css('width',$('#sideBar').css('width'))
   .text($('#lifeLeft').text()+" "+life)
 }
 
 function setKnives(){
-  $('#Knives').css('position','absolute').css('top',65)
+  $('#Knives').css('position','absolute').css('top',105)
   .css('width',$('#sideBar').css('width')).css('height',20)
   .text('Knives '+knives);
 }
 
 function setLevel(){
-  $('#Level').css('position','absolute').css('top',125)
+  $('#Level').css('position','absolute').css('top',185)
   .css('width',$('#sideBar').css('width')).css('height',20)
   .text('Level '+level);
 }
 function setStars(){
-  $('#Stars').css("position", 'absolute').css('top',185)
+  $('#Stars').css("position", 'absolute').css('top',205)
   .css('width',$('#sideBar').css('width')).css('height',20)
   .text('Stars '+ stars);
 }
@@ -134,7 +130,7 @@ function knivesFalling(){
 }
 
 function knifeFall(){
-  var rand = Math.floor((Math.random() * (500)) + 0);
+  let rand = Math.floor((Math.random() * (500)) + 0);
   var img = $('<img>').css('position','absolute').css('left',rand+80)
   .attr('id','knife').addClass('knives').attr('src','knife.png')
   .css('width',10).css('height',30).appendTo($('#bg'));
@@ -150,15 +146,15 @@ function knifeFall(){
       didItHit(img)
     }
   }
-  function didItHit(img){
-      let left = parseInt(img.css('left'));
-      if ((parseInt(img.css('top')) >= 310)
+  function didItHit( img) {
+      let left = parseInt( img.css( 'left'));
+      if( ( parseInt( img.css('top')) >= 310)
         &&(left >= bunnyBlock.q)
         &&(left + 30 <= bunnyBlock.w)){
         $('.knives').remove();
         $('.stars').remove();
         knives = level * 40;
-        for (var ii = 0 ; ii < 220; ii++){
+        for (var ii = 0 ; ii < 1000; ii++){
   	       clearInterval(ii);}
         life -= 1;
         $('#lifeLeft').text("Life Count = "+life);
@@ -196,10 +192,10 @@ function starsAreFalling(){
       llog("less than 5")
       clearInterval(starInterval)
     }
-    llog(knives)
     var rand = Math.floor((Math.random() * (500)) + 0);
-    var star = $('<img>').attr('src','star.png').attr('id','star').css('position','absolute')
-    .css('width',10).css('height',10).css('top',0).css('left',rand+80).addClass('stars');
+    var star = $('<img>').attr('src','star.png').attr('id','star')
+    .css('position','absolute').css('width',10).css('height',10).css('top',0)
+    .css('left',rand+80).addClass('stars');
     star.appendTo($('#bg'));
     var interval = setInterval(fall, 5);
     var i = 0;
@@ -225,20 +221,23 @@ function starsAreFalling(){
 
       function toCave(){
         var left = parseInt(star.css('left'));
-        if (parseInt(star.css('left')) < cave.x ){
-          star.css('left',parseInt(star.css('left'))+2)
-          if(parseInt(star.css('top')) > cave.y){
-            star.css('top',parseInt(star.css('top'))-2);
+        if (left < cave.x ){    // Star is located right
+          star.css('left',parseInt(star.css('left'))+2)}
+        if(parseInt(star.css('top')) > cave.y){   //star is located above cave
+            star.css('top',parseInt(star.css('top')) - 2);
           }
-          if(parseInt(star.css('top'))<cave.y){
+        if(parseInt(star.css('top'))<cave.y){   //star is located below cave
             star.css('top', parseInt(star.css('top') - 2));
           }
-        }else{
-          star.remove();
-          llog("star saved into cave")
-          clearInterval(toCaveInterval)
-          stars ++;
-          $('#Stars').text("Stars "+stars)
+        if(left >cave.x + 3){
+          star.css('left', left - 2);
+        }
+        if ((left >= cave.x-4) && (parseInt(star.css('top')) >= cave.y-4)
+        &&(left<= cave.x+4)&&(parseInt(star.css('top'))<=cave.y+4)){
+            star.remove();
+            clearInterval(toCaveInterval)
+            stars ++;
+            $('#Stars').text("Stars "+stars)
         }
       }
     }
