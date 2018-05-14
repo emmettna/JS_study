@@ -3,14 +3,21 @@
 By Emmett Na 2017/05/10
 
 */
+/* TODO
 
+2)  stars go inside to cave once it's collected
+3)  Game Over Screen #Done
+4)  Defeated Screen #Done
+5)  Change stars to Knifves #Done
+*/
 var life = 5;
 var bunnyImg = new Image();
 var bunnyObj;
 var level = 1;
-var stars = 40 * level;
+var knives = 40 * level;
 var gravity = 200;
-
+var stars = 0;
+var cave = {y:300,x:510}
 var initPosition = {
   'left':40,
   'top':50}
@@ -41,8 +48,16 @@ function llog(text){
   console.log(text);
 }
 function setSquare(){
-  $('#squareBlock').css('position','absolute').css('top',canvasSize.height - bunnySize.height * 2 + 20)
+  $('#squareBlock').css('position','absolute')
+  .css('top',canvasSize.height - bunnySize.height * 2 + 20)
   .css('left',canvasSize.width/2).css('height',100).css('width',60)
+  .css('border','3px solid red');
+}
+
+function setCave(){
+  $('#cave').css('position','absolute')
+  .css('top',cave.y)
+  .css('left',cave.x).css('height',10).css('width',10)
   .css('border','3px solid red');
 }
 
@@ -50,13 +65,12 @@ function setMousePosition(event){
   mousePosition.x = event.clientX;
   mousePosition.y = event.clientY;
 
+  // Because of the image size, bunnyBlock is adjusted bruteforce
   if ( 130 < mousePosition.x && mousePosition.x < canvasSize.width+2){
     $('#bunny').css('left',event.clientX-60);
-    bunnyBlock.q = event.clientX - 30;
-    bunnyBlock.w = event.clientX + 30;
+    bunnyBlock.q = event.clientX - 55;
+    bunnyBlock.w = event.clientX + 20;
     $('#squareBlock').css('left', mousePosition.x-60);
-    llog(bunnyBlock.q)
-    llog("mouse position"+mousePosition.x)
   }
 }
 
@@ -72,8 +86,9 @@ function setSideBar(){
 
   // Add child nodes
   setLife();
-  setStars();
+  setKnives();
   setLevel();
+  setStars();
 }
 
 function setLife(){
@@ -83,10 +98,10 @@ function setLife(){
   .text($('#lifeLeft').text()+" "+life)
 }
 
-function setStars(){
-  $('#Stars').css('position','absolute').css('top',65)
+function setKnives(){
+  $('#Knives').css('position','absolute').css('top',65)
   .css('width',$('#sideBar').css('width')).css('height',20)
-  .text('Stars '+stars);
+  .text('Knives '+knives);
 }
 
 function setLevel(){
@@ -94,36 +109,41 @@ function setLevel(){
   .css('width',$('#sideBar').css('width')).css('height',20)
   .text('Level '+level);
 }
+function setStars(){
+  $('#Stars').css("position", 'absolute').css('top',185)
+  .css('width',$('#sideBar').css('width')).css('height',20)
+  .text('Stars '+ stars);
+}
 
-function starFalling(){
+function knivesFalling(){
   var interval = setInterval(shootEm, gravity);
   function shootEm(){
-    if (stars == 0){
+    if (knives == 0){
       level ++;
       $('#Level').text('Level '+level);
-      stars = 40 * (level * 1.1);
-      $('#Stars').text('Stars '+stars);
+      knives = 40 * (level * 1.1);
+      $('#Knives').text('knives '+knives);
       gravity -= 20;
       clearInterval(interval);
     }else{
-      starFall();
-      stars --;
-      setStars();
+      knifeFall();
+      knives --;
+      setKnives();
     }
   }
 }
 
-function starFall(){
+function knifeFall(){
   var rand = Math.floor((Math.random() * (500)) + 0);
   var img = $('<img>').css('position','absolute').css('left',rand+80)
-  .attr('id','star').addClass('stars').attr('src','star.png')
-  .css('width',10).css('height',10).appendTo($('#bg'));
+  .attr('id','knife').addClass('knives').attr('src','knife.png')
+  .css('width',10).css('height',30).appendTo($('#bg'));
   var i = initPosition.top;
-  var interval = setInterval(move,5);
+  var knifeInterval = setInterval(move,5);
   function move(){
     if(i==400){
       img.remove();
-      clearInterval(interval);
+      clearInterval(knifeInterval);
     }else{
       img.css('top',i + 1);
       i ++;
@@ -132,15 +152,95 @@ function starFall(){
   }
   function didItHit(img){
       let left = parseInt(img.css('left'));
-      if ((parseInt(img.css('top')) >= 300) &&
-      (left >= bunnyBlock.q) &&
-      (left + 30 <= bunnyBlock.w)){
-        llog('it hit');
+      if ((parseInt(img.css('top')) >= 310)
+        &&(left >= bunnyBlock.q)
+        &&(left + 30 <= bunnyBlock.w)){
+        $('.knives').remove();
         $('.stars').remove();
-        stars = level * 40;
+        knives = level * 40;
         for (var ii = 0 ; ii < 220; ii++){
-
   	       clearInterval(ii);}
+        life -= 1;
+        $('#lifeLeft').text("Life Count = "+life);
+        $('#bg').css('background-image','url(deadrabbit.png)')
+        $('#sideBar').hide();
+        if (life <= 0){
+          life = 5;
+          level = 1;
+          knives = level * 40;
+          repaintSidebar();
+          bgChange("gameover.jpg");
+        }
       }
     }
+}
+function startButton(){
+  knivesFalling();
+  bgChange('bunnyhouse.jpg');
+  $('#sideBar').show()
+  starsAreFalling()
+}
+function bgChange(url){
+  $('#bg').css('background-image','url('+url+')');
+
+}
+function repaintSidebar(){
+  $('#lifeLeft').text("Life Count = " + life);
+  $('#Level').text("Level "+level);
+  $('#Knives').text("Knives "+knives);
+}
+function starsAreFalling(){
+  var starInterval = setInterval(startsFall, 400);
+  function startsFall(){
+    if (knives <= 5){
+      llog("less than 5")
+      clearInterval(starInterval)
+    }
+    llog(knives)
+    var rand = Math.floor((Math.random() * (500)) + 0);
+    var star = $('<img>').attr('src','star.png').attr('id','star').css('position','absolute')
+    .css('width',10).css('height',10).css('top',0).css('left',rand+80).addClass('stars');
+    star.appendTo($('#bg'));
+    var interval = setInterval(fall, 5);
+    var i = 0;
+    function fall(){
+      star.css('top',parseInt(star.css('top')) + 1)
+      if(i>400){
+        clearInterval(interval)
+        star.remove();
+      }else{
+        i++;
+        collectStar()
+      }
+    }
+    function collectStar(){
+    let left = parseInt(star.css('left'));
+    if ((parseInt(star.css('top')) >= 310)
+      &&(left >= bunnyBlock.q)
+      &&(left + 30 <= bunnyBlock.w)){
+        llog("hit")
+        clearInterval(interval)
+        var toCaveInterval = setInterval(toCave, 10);
+      }
+
+      function toCave(){
+        var left = parseInt(star.css('left'));
+        if (parseInt(star.css('left')) < cave.x ){
+          star.css('left',parseInt(star.css('left'))+2)
+          if(parseInt(star.css('top')) > cave.y){
+            star.css('top',parseInt(star.css('top'))-2);
+          }
+          if(parseInt(star.css('top'))<cave.y){
+            star.css('top', parseInt(star.css('top') - 2));
+          }
+        }else{
+          star.remove();
+          llog("star saved into cave")
+          clearInterval(toCaveInterval)
+          stars ++;
+          $('#Stars').text("Stars "+stars)
+        }
+      }
+    }
+}
 }
